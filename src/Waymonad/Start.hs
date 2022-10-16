@@ -171,12 +171,6 @@ bindSocket display = liftIO $ do
 displayMain :: (FocusCore vs a, WSTag a) => CompHooks vs a -> DisplayServer -> Way vs a ()
 displayMain hooks display = do
     let outAdd = Bracketed (liftIO . addListener (WlListener $ handleOutputAdd hooks) . backendEvtOutput . backendGetSignals . snd) (liftIO .  removeListener)
-    liftIO $ do
-        dsp <- lookupEnv "WAYLAND_DISPLAY"
-        -- Prevent the idiotic defaulting behaviour of libwayland
-        case dsp of
-            Nothing -> setEnv "WAYLAND_DISPLAY" ":What are you even doing?:"
-            Just _ -> pure ()
     foldBrackets (outAdd: backendPreHook hooks) (uncurry $ backendMain hooks) . (display, ) =<< (liftIO $ backendAutocreate display)
 
 launchCompositor :: (FocusCore vs a, WSTag a) => CompHooks vs a -> Way vs a ()
